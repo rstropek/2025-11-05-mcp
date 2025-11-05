@@ -1,4 +1,5 @@
 import { Agent, Handoff, type InputGuardrail, type MCPServer } from "@openai/agents";
+import { sommelierAgent } from "./sommelier.js";
 import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
 
 export function createRestaurantAgent(fileSystemMcp: MCPServer): Agent {
@@ -13,6 +14,16 @@ export function createRestaurantAgent(fileSystemMcp: MCPServer): Agent {
         },
         mcpServers: [fileSystemMcp],
         handoffs: [],
+        inputGuardrails: [],
+        tools: [sommelierAgent.asTool({
+            toolName: 'Sommelier Tool',
+            toolDescription: 
+            `
+            A tool to help the user select a wine to pair with their meal. Use this tool when the user 
+            has chosen a dish and asks for a wine pairing. The tool will return a wine pairing 
+            recommendation based on the dish and the user's preferences.
+            `
+        })],
         instructions:
         `
             ${RECOMMENDED_PROMPT_PREFIX}

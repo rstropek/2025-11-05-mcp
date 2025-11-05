@@ -5,11 +5,11 @@ import { getAvailableBikesTool, rentBikeTool, returnBikeTool } from "../tools/bi
 export function createBikeRentalAgent(): Agent {
     return new Agent({
         name: 'Bike Rental Agent',
-        model: 'gpt-5',
         handoffDescription: 'This agent is responsible for bike rentals',
+        model: 'gpt-5',
         modelSettings: {
             providerData: {
-                reasoning: { effort: 'minimal' },
+                reasoning: { effort: 'minimal' }
             }
         },
         instructions:
@@ -24,7 +24,8 @@ export function createBikeRentalAgent(): Agent {
             related to bike rentals (e.g. renting accessories). If the user asks about any
             other topics, handoff to the Orchestrator Agent.
             `,
-        tools: [rentBikeTool, getAvailableBikesTool, returnBikeTool],
-        handoffs: []
+        // Adding the tool to the agent
+        tools: [getAvailableBikesTool, rentBikeTool, returnBikeTool],
+        handoffs: [],
     });
 }

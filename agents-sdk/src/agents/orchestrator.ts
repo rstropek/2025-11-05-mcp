@@ -1,15 +1,9 @@
-import { Agent } from "@openai/agents";
+import { Agent, Handoff } from "@openai/agents";
 import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
 
 export function createOrchestratorAgent(bikeRental: Agent, restaurant: Agent): Agent {
-    return new Agent({
+    return Agent.create({
         name: 'Orchestrator Agent',
-        model: 'gpt-5',
-        modelSettings: {
-            providerData: {
-                reasoning: { effort: 'minimal' },
-            }
-        },
         handoffDescription: 'This agent is responsible for routing user requests to the appropriate specialized agent.',
         instructions:
             `
