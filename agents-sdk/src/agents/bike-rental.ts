@@ -6,6 +6,7 @@ export function createBikeRentalAgent(): Agent {
     return new Agent({
         name: 'Bike Rental Agent',
         model: 'gpt-5',
+        handoffDescription: 'This agent is responsible for bike rentals',
         modelSettings: {
             providerData: {
                 reasoning: { effort: 'minimal' },
@@ -20,8 +21,10 @@ export function createBikeRentalAgent(): Agent {
             You can get available bikes, rent a bike and return a bike using the provided tools.
 
             Only assist with bike rentals. Do not offer additional services, even if they are 
-            related to bike rentals (e.g. renting accessories).
+            related to bike rentals (e.g. renting accessories). If the user asks about any
+            other topics, handoff to the Orchestrator Agent.
             `,
         tools: [rentBikeTool, getAvailableBikesTool, returnBikeTool],
+        handoffs: []
     });
 }

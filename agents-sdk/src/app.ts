@@ -5,6 +5,7 @@ import readline from 'node:readline';
 import { createBikeRentalAgent } from './agents/bike-rental.js';
 import type { ParsedResponseStreamEvent } from 'openai/lib/responses/EventTypes.js';
 import chalk from 'chalk';
+import { createOrchestratorAgent } from './agents/orchestrator.js';
 dotenv.config();
 
 const rl = readline.promises.createInterface({
@@ -20,12 +21,15 @@ const runner = new Runner({
 });
 
 const bikeRentalAgent = createBikeRentalAgent();
+const orchestratorAgent = createOrchestratorAgent(bikeRentalAgent);
+let currentAgent = orchestratorAgent;
+bikeRentalAgent.handoffs.push(orchestratorAgent);
 
 while (true) {
     const command = await rl.question('You (quit to exit)> ');
     if (command.toLowerCase() === 'quit') { break; }
 
-    const result = await runner.run(bikeRentalAgent, command, {
+    const result = await runner.run(currentAgent, command, {
         stream: true,
         conversationId,
     });
@@ -53,6 +57,8 @@ while (true) {
             }
         }
     }
+
+    currentAgent = result.lastAgent ?? orchestratorAgent;
 }
 
 rl.close();
