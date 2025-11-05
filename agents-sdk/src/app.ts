@@ -13,6 +13,7 @@ const rl = readline.promises.createInterface({
 });
 
 const client = new OpenAI();
+const { id: conversationId } = await client.conversations.create({});
 
 const runner = new Runner({
     workflowName: `Hotel_AI_${new Date().toISOString().replace(/[:.]/g, '-')}`,
@@ -25,7 +26,8 @@ while (true) {
     if (command.toLowerCase() === 'quit') { break; }
 
     const result = await runner.run(bikeRentalAgent, command, {
-        stream: true
+        stream: true,
+        conversationId,
     });
 
     for await (const event of result) {
