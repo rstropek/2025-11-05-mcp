@@ -1,4 +1,4 @@
-import { Runner } from '@openai/agents';
+import { MCPServerStdio, Runner } from '@openai/agents';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
 import readline from 'node:readline';
@@ -6,6 +6,9 @@ import { createBikeRentalAgent } from './agents/bike-rental.js';
 import type { ParsedResponseStreamEvent } from 'openai/lib/responses/EventTypes.js';
 import chalk from 'chalk';
 import { createOrchestratorAgent } from './agents/orchestrator.js';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createRestaurantAgent } from './agents/restaurant.js';
 dotenv.config();
 
 const rl = readline.promises.createInterface({
@@ -20,10 +23,20 @@ const runner = new Runner({
     workflowName: `Hotel_AI_${new Date().toISOString().replace(/[:.]/g, '-')}`,
 });
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const samplesDir = path.join(__dirname, 'menu');
+const mcpServer = new MCPServerStdio({
+    name: 'Filesystem MCP Server',
+    fullCommand: `npx -y @modelcontextprotocol/server-filesystem ${samplesDir}`,
+});
+await mcpServer.connect();
+
 const bikeRentalAgent = createBikeRentalAgent();
-const orchestratorAgent = createOrchestratorAgent(bikeRentalAgent);
+const restaurantAgent = createRestaurantAgent(mcpServer);
+const orchestratorAgent = createOrchestratorAgent(bikeRentalAgent, restaurantAgent);
 let currentAgent = orchestratorAgent;
 bikeRentalAgent.handoffs.push(orchestratorAgent);
+restaurantAgent.handoffs.push(orchestratorAgent);
 
 while (true) {
     const command = await rl.question('You (quit to exit)> ');
@@ -61,4 +74,5 @@ while (true) {
     currentAgent = result.lastAgent ?? orchestratorAgent;
 }
 
+await mcpServer.close();
 rl.close();
